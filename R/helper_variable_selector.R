@@ -5,17 +5,7 @@
 ################################################################################
 
 select_variables <- function(pbp) {
-  if (!"game_key" %in% colnames(pbp)) {
-    suppressWarnings(
-      out <-
-        pbp %>%
-        dplyr::select(
-          tidyselect::one_of(
-            c(nflscrapr_cols, new_cols)
-          )
-        )
-    )
-  } else {
+  if ("game_key" %in% colnames(pbp)) {
     suppressWarnings(
       out <-
         pbp %>%
@@ -25,13 +15,33 @@ select_variables <- function(pbp) {
           )
         )
     )
+  } else if ("weather" %in% colnames(pbp)) {
+    suppressWarnings(
+      out <-
+        pbp %>%
+        dplyr::select(
+          tidyselect::one_of(
+            c(nflscrapr_cols, new_cols, api_cols)
+          )
+        )
+    )
+  } else {
+    suppressWarnings(
+      out <-
+        pbp %>%
+        dplyr::select(
+          tidyselect::one_of(
+            c(nflscrapr_cols, new_cols)
+          )
+        )
+    )
   }
 
   return(out)
 }
 
 # columns that are not in gamecenter that we created
-new_cols <- c("season", "cp", "cpoe")
+new_cols <- c("season", "cp", "cpoe", "series", "series_success")
 
 # original nflscrapr columns
 nflscrapr_cols <-
@@ -123,6 +133,30 @@ rs_cols <- c(
   "drive_time_of_possession", "drive_inside20", "drive_first_downs",
   "drive_possession_team_abbr", "scoring_team_abbr", "scoring_type",
   "alert_play_type", "play_type_nfl", "time_of_day",
-  "yards", "end_yardline_side", "end_yardline_number", "series", "series_success"
+  "yards", "end_yardline_side", "end_yardline_number"
 )
+
+
+# these are columns in the new API that aren't in nflscrapR
+api_cols <- c(
+  "weather", "nfl_api_id", "start_time", "stadium", "week", "season_type",
+  "play_clock", "play_deleted",
+  "start_time", "end_clock_time", "end_yard_line",
+  "drive_play_count", "drive_time_of_possession",
+  "drive_quarter_start", "drive_end_transition",
+  "drive_end_yard_line", "drive_ended_with_score",
+  "drive_first_downs", "drive_game_clock_end",
+  "drive_game_clock_start", "drive_how_ended_description",
+  "drive_how_started_description", "drive_inside20",
+  "drive_play_count_2", "drive_play_id_ended",
+  "drive_play_id_started", "drive_play_seq_ended",
+  "drive_play_seq_started", "drive_quarter_end",
+  "drive_real_start_time", "drive_start_transition",
+  "drive_start_yard_line", "drive_time_of_possession_2",
+  "node_game_time", "node_slug", "node_venue_full_name",
+  "node_venue_city", "node_venue_state",
+  "node_home_team_franchise_current_logo_url", "node_away_team_franchise_current_logo_url",
+  "game_status_phase", "node_id", "play_type_nfl"
+)
+
 

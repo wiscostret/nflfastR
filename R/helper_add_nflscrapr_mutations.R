@@ -489,7 +489,7 @@ add_nflscrapr_mutations <- function(pbp) {
       qtr = quarter
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(game_id = as.numeric(game_id))
+    dplyr::mutate(game_id = as.character(game_id))
   message("added nflscrapR variables")
   return(out)
 }

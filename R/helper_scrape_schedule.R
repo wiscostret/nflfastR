@@ -1,78 +1,48 @@
 ################################################################################
-# Author: Sebastian Carl
-# Purpose: Function for scraping season schedule from the NFL RS Feed
+# Author: Sebastian Carl and Ben Baldwin
+# Purpose: Function for scraping games that have been put in github repo
 # Code Style Guide: styler::tidyverse_style()
 ################################################################################
 
-get_season_schedule <- function(season) {
-  season_schedule <- data.frame()
-  tryCatch(
-    expr = {
-      request <-
-        httr::GET(url = glue::glue("http://www.nfl.com/feeds-rs/schedules/{season}"))
+get_season_schedule <- function(year) {
 
-      if (request$status_code == 404) {
-        warning(warn <- 1)
-      }
+  schedule <-
+    httr::GET(
+      url = glue::glue("https://api.github.com/repos/guga31bb/nflfastR-data/contents/raw/{year}")
+    ) %>%
+    httr::content(as = "text", encoding = "UTF-8") %>%
+    jsonlite::fromJSON(flatten = TRUE) %>%
+    dplyr::select(name) %>%
+    dplyr::mutate(
+      name =
+        stringr::str_extract(
+          name, '[0-9]{4}\\_[0-9]{2}\\_[A-Z]{2,3}\\_[A-Z]{2,3}(?=.)'
+        ),
+      season =
+        stringr::str_extract(
+          name, '[0-9]{4}'
+        ),
+      week =
+        as.integer(stringr::str_extract(name, '(?<=\\_)[0-9]{2}(?=\\_)'))
+      ,
+      away_team =
+        stringr::str_extract(
+          name, '(?<=[0-9]\\_)[A-Z]{2,3}(?=\\_)'
+        ),
+      home_team =
+        stringr::str_extract(
+          name, '(?<=[A-Z]\\_)[A-Z]{2,3}'
+        ),
+      season_type = dplyr::if_else(week <= 17, 'REG', 'POST')
+    ) %>%
+    tibble::as_tibble() %>%
+    dplyr::arrange(season, week) %>%
+    dplyr::rename(game_id = name) %>%
+    dplyr::distinct()
 
-      raw_data <- request %>%
-        httr::content(as = "text", encoding = "UTF-8") %>%
-        jsonlite::fromJSON(flatten = TRUE)
+  return(schedule)
 
-      if (is.null(raw_data %>% purrr::pluck("gameSchedules"))) {
-        warning(warn <- 2)
-      }
 
-      season_schedule <- raw_data %>%
-        purrr::pluck("gameSchedules") %>%
-        as.data.frame() %>%
-        janitor::clean_names() %>%
-        dplyr::mutate(
-          # add Lee Sharpe's very useful alt_game_id
-          alt_game_id = dplyr::if_else(
-            season_type %in% c("REG", "POST"),
-            glue::glue("{season}_{formatC(week, width=2, flag=\"0\")}_{visitor_team_abbr}_{home_team_abbr}"),
-            NA_character_
-          )
-        ) %>%
-        dplyr::select(
-          season:game_id,
-          alt_game_id,
-          game_date:iso_time,
-          home_team = home_team_abbr,
-          away_team = visitor_team_abbr,
-          home_team_name = home_display_name,
-          away_team_name = visitor_display_name,
-          home_nickname,
-          away_nickname = visitor_nickname,
-          home_team_id,
-          away_team_id = visitor_team_id,
-          game_type,
-          week_name,
-          site_city = site_site_city,
-          site_fullname = site_site_fullname,
-          site_state = site_site_state,
-          site_roof_type
-          #network_channel
-        ) %>%
-        dplyr::arrange(game_id)
-    },
-    error = function(e) {
-      message("The following error has occured:")
-      message(e)
-    },
-    warning = function(w) {
-      if (warn == 1) {
-        message(glue::glue("Warning: The requested Season {season} is invalid!"))
-      } else if (warn == 2) {
-        message(glue::glue("Warning: Either the requested season {season} is invalid or no data available at this time!"))
-      } else {
-        message("The following warning has occured:")
-        message(w)
-      }
-    },
-    finally = {
-    }
-  )
-  return(season_schedule)
 }
+
+

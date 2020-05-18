@@ -329,15 +329,15 @@
 #' # Get pbp data for two 2019 games using gamecenter and no parallel processing
 #' # game_ids <- c("2019090804", "2019101700")
 #' # pbp <- fast_scraper(game_ids, source = "gc", pp = FALSE)
-fast_scraper <- function(game_ids, source = "rs", pp = FALSE) {
+fast_scraper <- function(game_ids, source = "api", pp = FALSE) {
 
   # Error handling to correct source type
-  if (!source %in% c("rs", "gc")) {
-    stop("Please choose source of 'rs' or 'gc'")
-  } else if (source == "rs") {
-    scraper_func <- get_pbp_rs
+  if (source %in% c("rs", "gc")) {
+    stop("The NFL removed the public available data feed. We are working on a new solution.\n Meanwhile please check https://github.com/guga31bb/nflfastR-data for pbp data of the seasons 2000-2019")
+  } else if (source != "api") {
+    stop("You tried to specify a source that isn't the new API. Please remove source from function or use source = api")
   } else {
-    scraper_func <- get_pbp_gc
+    scraper_func <- get_pbp_api
   }
 
   # No parallel processing demanded -> use purrr
@@ -409,6 +409,8 @@ fast_scraper <- function(game_ids, source = "rs", pp = FALSE) {
 #' # game_ids <- c("2019090804", "2019101700")
 #' # clips <- fast_scraper_clips(game_ids, pp = TRUE)
 fast_scraper_clips <- function(game_ids, pp = FALSE) {
+  stop("The NFL removed the public available data feed. We are working on a new solution.\n Meanwhile please check https://github.com/guga31bb/nflfastR-data for pbp data of the seasons 2000-2019")
+
   scraper_func <- get_pbp_highlights
 
   # No parallel processing demanded -> use purrr
@@ -497,6 +499,7 @@ fast_scraper_clips <- function(game_ids, pp = FALSE) {
 #' @export
 #'
 fast_scraper_roster <- function(team_ids, seasons, pp = FALSE) {
+  stop("The NFL removed the public available data feed. We are working on a new solution.\n Meanwhile please check https://github.com/guga31bb/nflfastR-data for pbp data of the seasons 2000-2019")
 
   # No parallel processing demanded -> use purrr
   if (pp == FALSE) {
