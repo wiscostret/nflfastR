@@ -31,7 +31,7 @@ License: MIT + file LICENSE
 URL: https://mrcaseb.github.io/nflfastR/, https://github.com/mrcaseb/nflfastR
 BugReports: https://github.com/mrcaseb/nflfastR/issues
 Depends: 
-    R (>= 3.5.0)
+    R (>= 3.4.0)
 Imports: 
     dplyr,
     glue,
